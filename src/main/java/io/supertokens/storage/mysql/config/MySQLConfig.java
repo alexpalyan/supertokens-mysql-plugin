@@ -74,6 +74,9 @@ public class MySQLConfig {
     @JsonProperty
     private String mysql_connection_uri = null;
 
+    @JsonProperty
+    private String instance_connection_name = null;
+
     public int getConnectionPoolSize() {
         return mysql_connection_pool_size;
     }
@@ -184,6 +187,14 @@ public class MySQLConfig {
             return "supertokens";
         }
         return mysql_database_name;
+    }
+
+    public String getInstanceConnectionName() {
+        return instance_connection_name;
+    }
+
+    public String getInstanceUnixSocket() {
+        return "/cloudsql/" + instance_connection_name;
     }
 
     public String getUsersTable() {
