@@ -102,6 +102,9 @@ public class MySQLConfig {
     @IgnoreForAnnotationCheck
     private String mysql_connection_uri = null;
 
+    @JsonProperty
+    private String instance_connection_name = null;
+
     @ConnectionPoolProperty
     private String mysql_connection_attributes = "allowPublicKeyRetrieval=true";
 
@@ -158,6 +161,18 @@ public class MySQLConfig {
         return mysql_connection_uri;
     }
 
+
+    public String getInstanceConnectionName() {
+        return instance_connection_name;
+    }
+
+    public String getInstanceUnixSocket() {
+        return "/cloudsql/" + instance_connection_name;
+    }
+
+    public boolean isCloudSql() {
+        return instance_connection_name != null;
+    }
 
     public String getUsersTable() {
         return addPrefixToTableName("all_auth_recipe_users");

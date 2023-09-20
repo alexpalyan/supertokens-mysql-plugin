@@ -50,7 +50,11 @@ public class ConnectionPool extends ResourceDistributor.SingletonResource {
         }
         HikariConfig config = new HikariConfig();
         MySQLConfig userConfig = Config.getConfig(start);
-        config.setDriverClassName("org.mariadb.jdbc.Driver");
+        if (userConfig.isCloudSql()) {
+            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        } else {
+            config.setDriverClassName("org.mariadb.jdbc.Driver");
+        }
 
         String scheme = userConfig.getConnectionScheme();
 
@@ -70,7 +74,11 @@ public class ConnectionPool extends ResourceDistributor.SingletonResource {
             attributes = "?" + attributes;
         }
 
-        config.setJdbcUrl("jdbc:" + scheme + "://" + hostName + port + "/" + databaseName + attributes);
+        if (userConfig.isCloudSql()) {
+            config.setJdbcUrl("jdbc:" + scheme + ":///" + databaseName);
+        } else {
+            config.setJdbcUrl("jdbc:" + scheme + "://" + hostName + port + "/" + databaseName + attributes);
+        }
 
         if (userConfig.getUser() != null) {
             config.setUsername(userConfig.getUser());
@@ -84,6 +92,11 @@ public class ConnectionPool extends ResourceDistributor.SingletonResource {
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        if (userConfig.isCloudSql()) {
+            config.addDataSourceProperty("socketFactory", "com.google.cloud.sql.mysql.SocketFactory");
+            config.addDataSourceProperty("cloudSqlInstance", userConfig.getInstanceConnectionName());
+            config.addDataSourceProperty("unixSocketPath", userConfig.getInstanceUnixSocket());
+        }
         // TODO: set maxLifetimeValue to lesser than 10 mins so that the following error doesnt happen:
         // io.supertokens.storage.mysql.HikariLoggingAppender.doAppend(HikariLoggingAppender.java:117) | SuperTokens
         // - Failed to validate connection org.mariadb.jdbc.MariaDbConnection@79af83ae (Connection.setNetworkTimeout
